@@ -34,6 +34,10 @@ export default function App() {
   }
 
   const tender = state.tender
+  const bn = state.lang === 'bn'
+  const tenderTitle = tender ? (bn && tender.title_bn) || tender.title : ''
+  const entity = tender ? (bn && tender.procuring_entity_bn) || tender.procuring_entity : ''
+  const bidder = tender ? (bn && tender.bidder_bn) || tender.bidder : ''
   const tenderIdShown = tender ? (state.lang === 'bn' ? toBnDigits(tender.tender_id) : tender.tender_id) : ''
 
   return (
@@ -75,15 +79,15 @@ export default function App() {
                     <p className="tabular text-sm font-medium text-accent">
                       {t('tender_id')} · {tenderIdShown}
                     </p>
-                    <h1 className="mt-1 text-[clamp(1.5rem,2.6vw,2rem)] font-semibold leading-tight tracking-[-0.02em] text-ink">{tender.title}</h1>
+                    <h1 className="mt-1 text-[clamp(1.5rem,2.6vw,2rem)] font-semibold leading-tight tracking-[-0.02em] text-ink">{tenderTitle}</h1>
                   </div>
                   <Button variant="secondary" size="sm" onClick={actions.closeTender}>
                     <RotateCcw size={14} aria-hidden /> {t('change_tender')}
                   </Button>
                 </div>
                 <dl className="mt-4 grid gap-x-8 gap-y-3 sm:grid-cols-3">
-                  <Meta icon={Building2} label={t('procuring_entity')} value={tender.procuring_entity} />
-                  <Meta icon={Briefcase} label={t('bidder')} value={tender.bidder} />
+                  <Meta icon={Building2} label={t('procuring_entity')} value={entity} />
+                  <Meta icon={Briefcase} label={t('bidder')} value={bidder} />
                   <Meta icon={CalendarDays} label={t('deadline')} value={formatDate(state.lang, tender.submission_deadline)} strong />
                 </dl>
               </motion.section>

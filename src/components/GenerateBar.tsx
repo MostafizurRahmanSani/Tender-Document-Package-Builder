@@ -60,7 +60,7 @@ export function GenerateBar({ store, onJump }: { store: Store; onJump: (reqId: s
   // Checklist export (bonus): opens correctly in Excel, Bangla included (UTF-8 BOM).
   function exportCsv() {
     const esc = (s: string | number) => `"${String(s).replace(/"/g, '""')}"`
-    const head = ['Document', 'File name', 'Pages', 'Expiry date', 'Status']
+    const head = [t('csv_document'), t('csv_file'), t('csv_pages'), t('csv_expiry'), t('csv_status')]
     const rows = views.map((v) => [
       docTitle(v),
       v.file?.name ?? '',

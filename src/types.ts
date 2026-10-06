@@ -6,6 +6,10 @@ export interface Tender {
   procuring_entity: string
   bidder: string
   submission_deadline: string // YYYY-MM-DD
+  // Optional Bangla versions. Shown in Bangla mode when present, otherwise the English text is used.
+  title_bn?: string
+  procuring_entity_bn?: string
+  bidder_bn?: string
 }
 
 export interface Requirement {

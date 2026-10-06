@@ -71,5 +71,8 @@ export function parseRequirements(text: string): ParseResult {
     bidder: (t.bidder as string).trim(),
     submission_deadline: deadline,
   }
+  for (const f of ['title_bn', 'procuring_entity_bn', 'bidder_bn'] as const) {
+    if (isText(t[f])) tender[f] = (t[f] as string).trim()
+  }
   return { ok: true, tender, requirements }
 }

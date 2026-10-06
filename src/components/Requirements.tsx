@@ -48,7 +48,6 @@ function Row({ v, index, store, highlighted }: { v: RequirementView; index: numb
   const { req, file, status } = v
   const lang = state.lang
   const title = lang === 'bn' ? req.title_bn : req.title_en
-  const other = lang === 'bn' ? req.title_en : req.title_bn
   const deadline = state.tender!.submission_deadline
   const docName = (id: string) => {
     const r = state.requirements.find((x) => x.id === id)
@@ -81,7 +80,6 @@ function Row({ v, index, store, highlighted }: { v: RequirementView; index: numb
         <div className="min-w-0 flex-1">
           <h3 className="font-semibold leading-snug text-ink">{title}</h3>
           <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted">
-            {other !== title && <span>{other}</span>}
             <span className={req.mandatory ? 'font-medium text-ink-2' : ''}>{req.mandatory ? t('mandatory') : t('optional')}</span>
             {req.has_expiry && <span>{t('needs_expiry')}</span>}
           </p>

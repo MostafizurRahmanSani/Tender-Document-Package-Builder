@@ -76,6 +76,12 @@ describe('parseRequirements', () => {
     const empty = parseRequirements(json({ tender, requirements: [] }))
     expect(!empty.ok && empty.error.key).toBe('err_no_requirements')
   })
+  it('keeps optional Bangla tender fields only when present', () => {
+    const r = parseRequirements(json({ tender: { ...tender, title_bn: 'আইটি সরঞ্জাম', bidder_bn: '  ' }, requirements: [req('A', 1)] }))
+    expect(r.ok && r.tender.title_bn).toBe('আইটি সরঞ্জাম')
+    expect(r.ok && r.tender.bidder_bn).toBeUndefined()
+    expect(r.ok && r.tender.procuring_entity_bn).toBeUndefined()
+  })
   it('falls back to English when title_bn is missing', () => {
     const r = parseRequirements(json({ tender, requirements: [{ id: 'A', order: 1, title_en: 'Trade', mandatory: true, has_expiry: true }] }))
     expect(r.ok && r.requirements[0].title_bn).toBe('Trade')
