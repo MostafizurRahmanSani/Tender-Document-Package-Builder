@@ -39,34 +39,6 @@ export function Files({ store }: { store: Store }) {
           </h2>
           <p className="text-sm text-muted">{t('files_hint')}</p>
         </div>
-        {state.files.length > 0 &&
-          (confirmAll ? (
-            <div role="group" aria-label={t('remove_all')} className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="text-ink-2">{t('remove_all_ask', { n: state.files.length })}</span>
-              <button
-                type="button"
-                autoFocus
-                onClick={() => {
-                  actions.removeAll()
-                  setConfirmAll(false)
-                }}
-                className="h-8 rounded-md bg-bad px-3 text-[13px] font-semibold text-surface hover:brightness-110"
-              >
-                {t('yes_remove')}
-              </button>
-              <button type="button" onClick={() => setConfirmAll(false)} className="h-8 rounded-md px-3 text-[13px] font-medium text-ink-2 hover:bg-sunken">
-                {t('cancel')}
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setConfirmAll(true)}
-              className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[13px] font-medium text-ink-2 hover:bg-bad-soft hover:text-bad"
-            >
-              <Trash2 size={14} aria-hidden /> {t('remove_all')}
-            </button>
-          ))}
       </div>
 
       <div
@@ -142,6 +114,38 @@ export function Files({ store }: { store: Store }) {
           ))}
         </AnimatePresence>
       </div>
+
+      {state.files.length > 0 && (
+        <div className="mt-3 flex justify-end">
+          {confirmAll ? (
+            <div role="group" aria-label={t('remove_all')} className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-ink-2">{t('remove_all_ask', { n: state.files.length })}</span>
+              <button
+                type="button"
+                autoFocus
+                onClick={() => {
+                  actions.removeAll()
+                  setConfirmAll(false)
+                }}
+                className="h-8 rounded-md bg-bad px-3 text-[13px] font-semibold text-surface hover:brightness-110"
+              >
+                {t('yes_remove')}
+              </button>
+              <button type="button" onClick={() => setConfirmAll(false)} className="h-8 rounded-md px-3 text-[13px] font-medium text-ink-2 hover:bg-sunken">
+                {t('cancel')}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmAll(true)}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[13px] font-medium text-ink-2 hover:bg-bad-soft hover:text-bad"
+            >
+              <Trash2 size={14} aria-hidden /> {t('remove_all')}
+            </button>
+          )}
+        </div>
+      )}
 
       {state.files.length === 0 ? (
         <p className="mt-6 rounded-md bg-sunken px-4 py-6 text-center text-sm text-muted">{t('empty_files')}</p>
