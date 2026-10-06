@@ -170,12 +170,17 @@ export function GenerateBar({ store, onJump }: { store: Store; onJump: (reqId: s
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <label className="flex items-center gap-2 text-sm text-ink-2" title={t('with_index')}>
+          <label
+            className={`flex h-9 cursor-pointer items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors ${
+              withIndex ? 'border-accent-fg/50 bg-accent-soft text-accent-fg' : 'border-line-strong bg-surface text-ink-2 hover:bg-sunken'
+            }`}
+            title={t('with_index')}
+          >
             <input type="checkbox" checked={withIndex} onChange={(e) => actions.setWithIndex(e.target.checked)} className="size-4 accent-[var(--color-accent)]" />
             <span className="hidden sm:inline">{t('with_index')}</span>
             <span className="sm:hidden">{t('index_short')}</span>
           </label>
-          <Button variant="ghost" size="md" onClick={exportCsv}>
+          <Button variant="secondary" size="md" onClick={exportCsv}>
             <Sheet size={16} aria-hidden /> <span className="hidden sm:inline">{t('export_csv')}</span>
             <span className="sm:hidden">CSV</span>
           </Button>

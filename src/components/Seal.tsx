@@ -77,7 +77,7 @@ export function Seal({ store }: { store: Store }) {
           </div>
         </div>
         {!seal && (
-          <Button variant="secondary" size="md" onClick={() => input.current?.click()}>
+          <Button variant="soft" size="md" onClick={() => input.current?.click()}>
             <ImagePlus size={16} aria-hidden /> {t('seal_upload')}
           </Button>
         )}

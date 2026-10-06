@@ -26,16 +26,20 @@ export function Requirements({ store, flash, onAutoMatch, onAiMatch, aiBusy }: P
           </h2>
           <p className="text-sm text-muted">{t('required_docs_hint')}</p>
         </div>
-        <div className="flex flex-wrap gap-1">
-          <Button variant="ghost" size="sm" onClick={onAutoMatch} disabled={!readyFiles.length}>
-            <Wand2 size={15} aria-hidden /> {t('auto_match')}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="primary" size="md" onClick={onAutoMatch} disabled={!readyFiles.length}>
+            <Wand2 size={16} aria-hidden /> {t('auto_match')}
           </Button>
-          <Button variant="ghost" size="sm" onClick={onAiMatch} disabled={!readyFiles.length || aiBusy}>
-            {aiBusy ? <LoaderCircle size={15} className="animate-spin" aria-hidden /> : <Sparkles size={15} aria-hidden />}
+          <Button variant="soft" size="md" onClick={onAiMatch} disabled={!readyFiles.length || aiBusy} className="group">
+            {aiBusy ? (
+              <LoaderCircle size={16} className="animate-spin" aria-hidden />
+            ) : (
+              <Sparkles size={16} className="transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" aria-hidden />
+            )}
             {aiBusy ? t('ai_matching') : t('ai_match')}
           </Button>
-          <Button variant="ghost" size="sm" onClick={actions.undo} disabled={!state.history.length}>
-            <Undo2 size={15} aria-hidden /> {t('undo')}
+          <Button variant="ghost" size="md" onClick={actions.undo} disabled={!state.history.length}>
+            <Undo2 size={16} aria-hidden /> {t('undo')}
           </Button>
         </div>
       </div>

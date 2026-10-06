@@ -34,11 +34,12 @@ export function StatusBadge({ status, label }: { status: Status; label: string }
   )
 }
 
-type Variant = 'primary' | 'secondary' | 'ghost'
+type Variant = 'primary' | 'secondary' | 'ghost' | 'soft'
 const VARIANTS: Record<Variant, string> = {
   primary: 'bg-accent text-white hover:bg-accent-hover disabled:bg-line-strong disabled:text-white',
   secondary: 'bg-surface text-ink border border-line-strong hover:bg-sunken disabled:text-muted',
   ghost: 'text-ink-2 hover:bg-sunken hover:text-ink disabled:text-muted/60',
+  soft: 'bg-accent-soft text-accent-fg ring-1 ring-inset ring-accent-fg/35 hover:bg-accent hover:text-white hover:ring-accent disabled:bg-sunken disabled:text-muted disabled:ring-line',
 }
 
 export function Button({
