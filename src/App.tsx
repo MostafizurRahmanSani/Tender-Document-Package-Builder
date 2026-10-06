@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
-import { CalendarDays, Building2, Briefcase, RotateCcw, Wand2 } from 'lucide-react'
+import { CalendarDays, Building2, Briefcase, Moon, RotateCcw, Sun, Wand2 } from 'lucide-react'
 import { useStore } from './state'
 import { Start } from './components/Start'
 import { Requirements } from './components/Requirements'
@@ -9,9 +9,11 @@ import { GenerateBar } from './components/GenerateBar'
 import { Button, formatDate } from './components/ui'
 import type { Lang } from './types'
 import { toBnDigits } from './i18n'
+import { useTheme } from './theme'
 
 export default function App() {
   const store = useStore()
+  const { theme, toggle } = useTheme()
   const { state, t, actions } = store
   const [flash, setFlash] = useState<string | null>(null)
   const [toast, setToast] = useState<number | null>(null) // matches made by auto-match
@@ -55,6 +57,15 @@ export default function App() {
               </span>
             )}
             <div className="ml-auto flex items-center gap-3">
+              <button
+                type="button"
+                onClick={toggle}
+                aria-label={t(theme === 'dark' ? 'theme_to_light' : 'theme_to_dark')}
+                title={t(theme === 'dark' ? 'theme_to_light' : 'theme_to_dark')}
+                className="flex size-9 items-center justify-center rounded-md border border-line bg-sunken text-ink-2 transition-colors hover:text-ink"
+              >
+                {theme === 'dark' ? <Sun size={17} aria-hidden /> : <Moon size={17} aria-hidden />}
+              </button>
               <LangSwitch lang={state.lang} onChange={actions.setLang} label={t('lang_label')} />
             </div>
           </div>
@@ -73,7 +84,7 @@ export default function App() {
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="tabular text-sm font-medium text-accent">
+                    <p className="tabular text-sm font-medium text-accent-fg">
                       {t('tender_id')} · {tenderIdShown}
                     </p>
                     <h1 className="mt-1 text-[clamp(1.5rem,2.6vw,2rem)] font-semibold leading-tight tracking-[-0.02em] text-ink">{tenderTitle}</h1>
@@ -107,7 +118,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 12 }}
               role="status"
-              className="fixed bottom-36 left-1/2 z-40 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm text-white shadow-lg lg:bottom-28"
+              className="fixed bottom-36 left-1/2 z-40 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm text-paper shadow-lg lg:bottom-28"
             >
               <Wand2 size={15} aria-hidden /> {toast > 0 ? t('auto_matched', { n: toast }) : t('auto_matched_none')}
             </motion.div>

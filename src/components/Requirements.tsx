@@ -90,7 +90,7 @@ function Row({ v, index, store, highlighted }: { v: RequirementView; index: numb
       <div className="mt-3 flex flex-wrap items-center gap-3 pl-10">
         {file ? (
           <span className="inline-flex max-w-full items-center gap-2 rounded-md border border-line bg-surface py-1.5 pl-2.5 pr-1 text-sm">
-            <FileText size={16} className="shrink-0 text-accent" aria-hidden />
+            <FileText size={16} className="shrink-0 text-accent-fg" aria-hidden />
             <span className="truncate font-medium text-ink" title={file.name}>
               {file.name}
             </span>

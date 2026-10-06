@@ -51,7 +51,7 @@ export function Start({ t, onLoaded }: Props) {
               transition={{ delay: 0.12 + i * 0.06, duration: 0.3 }}
               className="flex gap-4 border-b border-line py-4 last:border-b-0"
             >
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-accent-soft text-accent">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-accent-soft text-accent-fg">
                 <s.icon size={18} aria-hidden />
               </span>
               <div>
@@ -80,7 +80,7 @@ export function Start({ t, onLoaded }: Props) {
             over ? 'border-accent bg-accent-soft' : 'border-line-strong bg-surface'
           }`}
         >
-          <span className="flex size-14 items-center justify-center rounded-full bg-accent-soft text-accent">
+          <span className="flex size-14 items-center justify-center rounded-full bg-accent-soft text-accent-fg">
             <FileJson size={26} aria-hidden />
           </span>
           <button

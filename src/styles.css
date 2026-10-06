@@ -16,6 +16,7 @@
   --color-accent: #2b4fd8;
   --color-accent-hover: #2442b8;
   --color-accent-soft: #e9eefd;
+  --color-accent-fg: #2b4fd8; /* accent used as text or icon color */
 
   --color-ok: #157a3c;
   --color-ok-soft: #e6f5ec;
@@ -33,9 +34,37 @@
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Dark theme: same tokens, new values. Chosen by the toggle, or by the system setting on first visit. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-paper: #0b1020;
+  --color-surface: #121a2c;
+  --color-sunken: #1a2338;
+  --color-ink: #e9edf5;
+  --color-ink-2: #c4ccdb;
+  --color-muted: #9aa6ba;
+  --color-line: #26324b;
+  --color-line-strong: #38476a;
+
+  --color-accent: #4366ec;
+  --color-accent-hover: #5a7bf2;
+  --color-accent-soft: #1b2650;
+  --color-accent-fg: #8aa2ff;
+
+  --color-ok: #4ade80;
+  --color-ok-soft: #12301f;
+  --color-warn: #fbbf24;
+  --color-warn-soft: #3a2a0c;
+  --color-bad: #f87171;
+  --color-bad-soft: #3d1618;
+  --color-idle: #9aa6ba;
+  --color-idle-soft: #1a2338;
+}
+
 html {
   background: var(--color-paper);
   color: var(--color-ink);
+  color-scheme: light;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }

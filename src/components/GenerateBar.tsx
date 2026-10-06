@@ -204,7 +204,7 @@ export function GenerateBar({ store, onJump }: { store: Store; onJump: (reqId: s
                 <CircleCheck size={16} aria-hidden /> {t('done', { pages: result.pages })}
               </span>
               <span className="tabular text-muted">{fileName}</span>
-              <button type="button" onClick={() => save(result.blob, fileName)} className="inline-flex items-center gap-1 font-medium text-accent hover:underline">
+              <button type="button" onClick={() => save(result.blob, fileName)} className="inline-flex items-center gap-1 font-medium text-accent-fg hover:underline">
                 <Download size={14} aria-hidden /> {t('download_again')}
               </button>
             </motion.div>

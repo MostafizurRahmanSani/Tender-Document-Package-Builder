@@ -5,6 +5,8 @@ const en = {
   app_name: 'Tender Package Builder',
   app_tag: 'Check, order and combine tender documents',
   lang_label: 'Language',
+  theme_to_dark: 'Switch to dark mode',
+  theme_to_light: 'Switch to light mode',
   privacy: 'Files never leave your computer',
 
   // Start screen
@@ -114,6 +116,8 @@ const bn: Record<Key, string> = {
   app_name: 'টেন্ডার প্যাকেজ বিল্ডার',
   app_tag: 'টেন্ডারের কাগজপত্র যাচাই, সাজানো ও একত্র করুন',
   lang_label: 'ভাষা',
+  theme_to_dark: 'ডার্ক মোডে যান',
+  theme_to_light: 'লাইট মোডে যান',
   privacy: 'ফাইল আপনার কম্পিউটারেই থাকে, কোথাও আপলোড হয় না',
 
   start_title: 'সম্পূর্ণ ও যাচাই করা টেন্ডার প্যাকেজ তৈরি করুন',
