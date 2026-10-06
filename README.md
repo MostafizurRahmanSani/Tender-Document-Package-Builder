@@ -3,7 +3,8 @@
 A browser-only web app that helps office staff turn a set of tender PDFs into one complete, checked and correctly ordered PDF package, ready to submit. Built for the AI DevFest 2026 vibe-coding contest.
 
 **Name:** Mostafizur Rahman Sani
-**Live site (HTTPS):** https://mostafizurrahmansani.github.io/Tender-Document-Package-Builder/
+**Live site (HTTPS):** _Vercel link: add here_
+**Repository:** https://github.com/MostafizurRahmanSani/Tender-Document-Package-Builder
 
 ## What it does
 - Loads the tender's `requirements.json` and lists the required documents in order
@@ -70,10 +71,14 @@ Vite, React, TypeScript, Tailwind CSS, Motion, pdf-lib, Lucide icons, Inter + No
 - The expiry date picker shows dates in the browser's own format
 
 ## AI tools used
-- Claude Code
+- Claude Code (VS Code extension) with Claude Opus 5.5 for planning, architecture and the final audit, and Claude Sonnet 5.5 for building features
+- Claude Code skills: devfest26-rulebook, devfest26-vibe-builder, ui-ux-pro-max (design system), taste-skill, framer-motion, professional
+- Chrome with Playwright for visual and end-to-end checks
 
 ## Most useful prompt
-> "start phase 1, please use modern sleek good design for the frontend, with all the logics perfeclty done" (with the full problem statement and a written spec as context)
+> "please read all files in the problem info, fully understand the task"
+
+Why it mattered: before any code was written, the AI read the problem statement, `requirements.json` and every sample PDF, including rendering the image-only `scan_0042.pdf`. That found all the hidden problems in the sample pack: the expired 2025 trade license, the duplicate experience certificate under a different name, the non-PDF logo, and the unnamed scan that is really the Signed Declaration. It also gave the exact expected result (a 16-page package), which became a test. The follow-up prompt, *"start phase 1, please use modern sleek good design for the frontend, with all the logics perfeclty done"*, then turned that into a written spec with every status rule pinned down before building.
 
 ## License
 MIT. See LICENSE.
