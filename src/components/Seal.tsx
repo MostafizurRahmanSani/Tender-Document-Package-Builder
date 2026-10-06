@@ -114,7 +114,7 @@ export function Seal({ store }: { store: Store }) {
               <p className="max-w-[148px] truncate text-[13px] text-muted" title={seal.name}>
                 {seal.name}
               </p>
-              <div className="flex gap-1">
+              <div className="-ml-2.5 flex flex-col items-start gap-0.5">
                 <Button variant="ghost" size="sm" onClick={() => input.current?.click()}>
                   {t('seal_replace')}
                 </Button>

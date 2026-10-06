@@ -26,7 +26,7 @@ export function Requirements({ store, flash, onAutoMatch, onAiMatch, aiBusy }: P
           </h2>
           <p className="text-sm text-muted">{t('required_docs_hint')}</p>
         </div>
-        <div className="flex gap-1">
+        <div className="flex flex-wrap gap-1">
           <Button variant="ghost" size="sm" onClick={onAutoMatch} disabled={!readyFiles.length}>
             <Wand2 size={15} aria-hidden /> {t('auto_match')}
           </Button>
