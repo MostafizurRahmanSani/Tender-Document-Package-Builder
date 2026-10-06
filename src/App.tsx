@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
-import { CalendarDays, Building2, Briefcase, RotateCcw, ShieldCheck, Wand2 } from 'lucide-react'
+import { CalendarDays, Building2, Briefcase, RotateCcw, Wand2 } from 'lucide-react'
 import { useStore } from './state'
 import { Start } from './components/Start'
 import { Requirements } from './components/Requirements'
@@ -55,9 +55,6 @@ export default function App() {
               </span>
             )}
             <div className="ml-auto flex items-center gap-3">
-              <span className="hidden items-center gap-1.5 text-[13px] text-muted lg:flex">
-                <ShieldCheck size={15} className="text-ok" aria-hidden /> {t('privacy')}
-              </span>
               <LangSwitch lang={state.lang} onChange={actions.setLang} label={t('lang_label')} />
             </div>
           </div>

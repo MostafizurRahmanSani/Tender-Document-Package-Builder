@@ -1,6 +1,6 @@
 import { useRef, useState, type DragEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { CircleAlert, Copy, FileText, FileWarning, LoaderCircle, Trash2, Upload, X } from 'lucide-react'
+import { CircleAlert, Copy, FileText, FileWarning, LoaderCircle, ShieldCheck, Trash2, Upload, X } from 'lucide-react'
 import type { Store } from '../state'
 import { requirementOf, duplicateLock } from '../logic/match'
 import { formatSize } from './ui'
@@ -67,6 +67,10 @@ export function Files({ store }: { store: Store }) {
           }}
         />
       </div>
+
+      <p className="mt-2 flex items-center justify-center gap-1.5 text-[13px] text-muted">
+        <ShieldCheck size={14} className="shrink-0 text-ok" aria-hidden /> {t('privacy')}
+      </p>
 
       <div className="mt-3 flex items-center gap-3">
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-sunken" aria-hidden>
