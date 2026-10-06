@@ -46,10 +46,10 @@ export default function App() {
     <MotionConfig reducedMotion="user">
       <div className="flex min-h-dvh flex-col">
         <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/85">
-          <div className="mx-auto flex h-14 w-full max-w-[1400px] items-center gap-3 px-4 sm:px-8">
+          <div className="mx-auto flex h-16 w-full max-w-[1400px] items-center gap-3 px-4 sm:px-8">
             <div className="flex min-w-0 items-center gap-2.5">
-              <img src="./icon-192.png" alt="" width={32} height={32} className="size-8 shrink-0" />
-              <span className="truncate font-semibold tracking-[-0.01em] text-ink">{t('app_name')}</span>
+              <img src="./icon-192.png" alt="" width={40} height={40} className="size-9 shrink-0 sm:size-10" />
+              <span className="line-clamp-2 text-[15px] font-semibold leading-tight tracking-[-0.015em] text-ink sm:truncate sm:text-[22px]">{t('app_name')}</span>
             </div>
             {tender && (
               <span className="tabular hidden rounded-full border border-line bg-sunken px-2.5 py-0.5 text-[13px] font-medium text-ink-2 md:inline">
@@ -102,7 +102,7 @@ export default function App() {
 
               <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1.65fr)_minmax(320px,1fr)] lg:gap-12">
                 <Requirements store={store} flash={flash} onAutoMatch={autoMatch} />
-                <aside className="lg:sticky lg:top-20 lg:self-start">
+                <aside className="lg:sticky lg:top-24 lg:self-start">
                   <Files store={store} />
                 </aside>
               </div>

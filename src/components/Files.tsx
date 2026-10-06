@@ -1,4 +1,4 @@
-import { useRef, useState, type DragEvent } from 'react'
+import { useEffect, useRef, useState, type DragEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { CircleAlert, Copy, FileText, FileWarning, LoaderCircle, ShieldCheck, Trash2, Upload, X } from 'lucide-react'
 import type { Store } from '../state'
@@ -12,6 +12,12 @@ export function Files({ store }: { store: Store }) {
   const lang = state.lang
   const input = useRef<HTMLInputElement>(null)
   const [over, setOver] = useState(false)
+  const [confirmAll, setConfirmAll] = useState(false)
+
+  // Nothing left to remove, so drop the confirmation.
+  useEffect(() => {
+    if (!state.files.length) setConfirmAll(false)
+  }, [state.files.length])
   const total = state.files.reduce((n, f) => n + f.size, 0)
   const docName = (id: string) => {
     const r = state.requirements.find((x) => x.id === id)
@@ -33,6 +39,34 @@ export function Files({ store }: { store: Store }) {
           </h2>
           <p className="text-sm text-muted">{t('files_hint')}</p>
         </div>
+        {state.files.length > 0 &&
+          (confirmAll ? (
+            <div role="group" aria-label={t('remove_all')} className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-ink-2">{t('remove_all_ask', { n: state.files.length })}</span>
+              <button
+                type="button"
+                autoFocus
+                onClick={() => {
+                  actions.removeAll()
+                  setConfirmAll(false)
+                }}
+                className="h-8 rounded-md bg-bad px-3 text-[13px] font-semibold text-surface hover:brightness-110"
+              >
+                {t('yes_remove')}
+              </button>
+              <button type="button" onClick={() => setConfirmAll(false)} className="h-8 rounded-md px-3 text-[13px] font-medium text-ink-2 hover:bg-sunken">
+                {t('cancel')}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmAll(true)}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[13px] font-medium text-ink-2 hover:bg-bad-soft hover:text-bad"
+            >
+              <Trash2 size={14} aria-hidden /> {t('remove_all')}
+            </button>
+          ))}
       </div>
 
       <div
@@ -119,6 +153,7 @@ export function Files({ store }: { store: Store }) {
               const twins = dupes.get(f.id)
               const lock = duplicateLock(state.match, f.id, dupes)
               const twinName = twins ? state.files.find((x) => x.id === twins[0])?.name ?? '' : ''
+              const sameName = !!twins && twinName === f.name
               return (
                 <motion.li
                   key={f.id}
@@ -161,7 +196,7 @@ export function Files({ store }: { store: Store }) {
                           </span>
                         )}
                       </p>
-                      {twins && <p className="mt-1 text-[13px] text-warn">{t('same_as', { name: twinName })}</p>}
+                      {twins && <p className="mt-1 text-[13px] text-warn">{sameName ? t('added_twice') : t('same_as', { name: twinName })}</p>}
                       {f.state === 'error' && <p className="mt-1 text-[13px] text-bad">{t(f.error === 'encrypted' ? 'file_encrypted' : 'file_damaged')}</p>}
 
                       {f.state === 'ready' && (

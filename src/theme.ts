@@ -2,13 +2,12 @@ import { useCallback, useEffect, useState } from 'react'
 
 export type Theme = 'light' | 'dark'
 
+// index.html has already set the theme before React starts (light unless the user chose dark).
 function initial(): Theme {
-  const set = document.documentElement.dataset.theme
-  if (set === 'dark' || set === 'light') return set
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
 }
 
-// Light/dark theme. The choice is remembered; until the user picks one, the system setting decides.
+// Light/dark theme. Light is the default; the user's choice is remembered.
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(initial)
 

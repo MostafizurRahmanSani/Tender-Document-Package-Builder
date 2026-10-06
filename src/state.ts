@@ -24,6 +24,7 @@ type Action =
   | { type: 'addFile'; file: UploadedFile }
   | { type: 'updateFile'; id: string; patch: Partial<UploadedFile> }
   | { type: 'removeFile'; id: string }
+  | { type: 'removeAll' }
   | { type: 'match'; next: MatchState; record: boolean }
   | { type: 'undo' }
   | { type: 'notice'; kind: NoticeKind; name: string }
@@ -51,6 +52,10 @@ function reducer(s: State, a: Action): State {
         history: next === s.match ? s.history : [...s.history, s.match].slice(-50),
       }
     }
+    case 'removeAll':
+      if (!s.files.length) return s
+      // Every file goes, so every match and expiry date goes with it.
+      return { ...s, files: [], match: EMPTY_MATCHES, history: [], notices: [] }
     case 'match':
       if (a.next === s.match) return s
       return { ...s, match: a.next, history: a.record ? [...s.history, s.match].slice(-50) : s.history }
@@ -169,6 +174,7 @@ export function useStore() {
       closeTender: () => dispatch({ type: 'closeTender' }),
       addFiles,
       removeFile: (id: string) => dispatch({ type: 'removeFile', id }),
+      removeAll: () => dispatch({ type: 'removeAll' }),
       assign: (reqId: string, fileId: string) =>
         dispatch({ type: 'match', next: assign(live.current.match, reqId, fileId, findDuplicates(live.current.files)), record: true }),
       unassign: (reqId: string) => dispatch({ type: 'match', next: unassign(live.current.match, reqId), record: true }),
