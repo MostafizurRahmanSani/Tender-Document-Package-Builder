@@ -3,7 +3,7 @@
 A browser-only web app that helps office staff turn a set of tender PDFs into one complete, checked and correctly ordered PDF package, ready to submit. Built for the AI DevFest 2026 vibe-coding contest.
 
 **Name:** Mostafizur Rahman Sani
-**Live site (HTTPS):** _Vercel link: add here_
+**Live site (HTTPS):** https://tender-document-package-builder-five.vercel.app/
 **Repository:** https://github.com/MostafizurRahmanSani/Tender-Document-Package-Builder
 
 ## What it does
