@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { FileText, Undo2, Wand2, X } from 'lucide-react'
+import { CalendarClock, FileText, Undo2, Wand2, X } from 'lucide-react'
 import type { Store, RequirementView } from '../state'
 import { requirementOf, duplicateLock } from '../logic/match'
 import { Button, StatusBadge, STATUS_STYLE, formatDate } from './ui'
@@ -79,10 +79,21 @@ function Row({ v, index, store, highlighted }: { v: RequirementView; index: numb
         <span className="tabular mt-0.5 w-6 shrink-0 text-sm font-semibold text-muted">{formatNumber(lang, req.order)}</span>
         <div className="min-w-0 flex-1">
           <h3 className="font-semibold leading-snug text-ink">{title}</h3>
-          <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-muted">
-            <span className={req.mandatory ? 'font-medium text-ink-2' : ''}>{req.mandatory ? t('mandatory') : t('optional')}</span>
-            {req.has_expiry && <span>{t('needs_expiry')}</span>}
-          </p>
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[12.5px] font-semibold">
+            {/* Required = solid accent, Optional = plain outline, so the difference is obvious at a glance */}
+            <span
+              className={`inline-flex items-center rounded-md px-2 py-0.5 ${
+                req.mandatory ? 'bg-accent-fg/15 text-accent-fg ring-1 ring-inset ring-accent-fg/30' : 'text-muted ring-1 ring-inset ring-line-strong'
+              }`}
+            >
+              {req.mandatory ? t('mandatory') : t('optional')}
+            </span>
+            {req.has_expiry && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-sunken px-2 py-0.5 text-ink-2">
+                <CalendarClock size={13} aria-hidden /> {t('needs_expiry')}
+              </span>
+            )}
+          </div>
         </div>
         <StatusBadge status={status} label={t(STATUS_STYLE[status].label)} />
       </div>
