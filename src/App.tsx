@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
-import { CalendarDays, Building2, Briefcase, FileStack, RotateCcw, ShieldCheck, Wand2 } from 'lucide-react'
+import { CalendarDays, Building2, Briefcase, RotateCcw, ShieldCheck, Wand2 } from 'lucide-react'
 import { useStore } from './state'
 import { Start } from './components/Start'
 import { Requirements } from './components/Requirements'
@@ -42,9 +42,7 @@ export default function App() {
         <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/85">
           <div className="mx-auto flex h-14 w-full max-w-[1400px] items-center gap-3 px-4 sm:px-8">
             <div className="flex min-w-0 items-center gap-2.5">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-accent text-white">
-                <FileStack size={17} aria-hidden />
-              </span>
+              <img src="./icon-192.png" alt="" width={32} height={32} className="size-8 shrink-0" />
               <span className="truncate font-semibold tracking-[-0.01em] text-ink">{t('app_name')}</span>
             </div>
             {tender && (
