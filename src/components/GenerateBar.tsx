@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { CircleCheck, Download, FileDown, LoaderCircle, Sheet } from 'lucide-react'
+import { ChevronUp, CircleCheck, Download, FileDown, LoaderCircle, Sheet, TriangleAlert } from 'lucide-react'
 import type { Store } from '../state'
 import { STATUS_STYLE, Button, formatDate } from './ui'
 import { buildPackage } from '../pdf/buildPackage'
@@ -25,6 +25,25 @@ export function GenerateBar({ store, onJump }: { store: Store; onJump: (reqId: s
   const [withIndex, setWithIndex] = useState(false)
   const [result, setResult] = useState<{ blob: Blob; pages: number } | null>(null)
   const [failed, setFailed] = useState(false)
+  const [open, setOpen] = useState(false) // list of issues
+  const issuesRef = useRef<HTMLDivElement>(null)
+
+  // Close the issue list on outside click or Esc.
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => !issuesRef.current?.contains(e.target as Node) && setOpen(false)
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (!blockers.length) setOpen(false)
+  }, [blockers.length])
 
   // Any change after a download makes the old result out of date.
   useEffect(() => {
@@ -88,28 +107,64 @@ export function GenerateBar({ store, onJump }: { store: Store; onJump: (reqId: s
               <motion.span
                 key={v.req.id}
                 layout
-                className={`h-2 flex-1 rounded-full transition-colors duration-300 ${STATUS_STYLE[v.status].bar} ${v.req.mandatory ? '' : 'opacity-60'}`}
+                className={`h-2 flex-1 rounded-full transition-colors duration-300 ${STATUS_STYLE[v.status].bar}`}
                 title={docTitle(v)}
               />
             ))}
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
+          <div className="relative mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" ref={issuesRef}>
             {blocked ? (
               <>
                 <span className="tabular font-semibold text-ink">{t('ready_count', { ok: readyRequired, total: required.length })}</span>
-                <span className="hidden text-muted sm:inline">{t('blocked_title')}</span>
-                {blockers.slice(0, 4).map((v, i) => (
-                  <button
-                    key={v.req.id}
-                    type="button"
-                    onClick={() => onJump(v.req.id)}
-                    className={`rounded-full px-2.5 py-0.5 text-[13px] font-medium underline-offset-2 hover:underline ${i > 0 ? 'hidden sm:inline' : ''} ${STATUS_STYLE[v.status].cls}`}
-                  >
-                    {docTitle(v)} — {reasonOf(v)}
-                  </button>
-                ))}
-                {blockers.length > 1 && <span className="text-muted sm:hidden">{t('more_blockers', { n: blockers.length - 1 })}</span>}
-                {blockers.length > 4 && <span className="hidden text-muted sm:inline">{t('more_blockers', { n: blockers.length - 4 })}</span>}
+                <button
+                  type="button"
+                  onClick={() => setOpen((o) => !o)}
+                  aria-expanded={open}
+                  aria-controls="issue-list"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-bad-soft py-0.5 pl-2 pr-2.5 text-[13px] font-semibold text-bad hover:brightness-95"
+                >
+                  <TriangleAlert size={14} aria-hidden /> {t('to_fix', { n: blockers.length })}
+                  <ChevronUp size={14} aria-hidden className={`transition-transform duration-200 ${open ? '' : 'rotate-180'}`} />
+                </button>
+
+                <AnimatePresence>
+                  {open && (
+                    <motion.ul
+                      id="issue-list"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 6 }}
+                      transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+                      className="absolute bottom-full left-0 z-30 mb-3 max-h-[min(50vh,22rem)] w-[min(34rem,calc(100vw-2rem))] overflow-auto rounded-lg border border-line bg-surface p-1.5 shadow-[0_12px_32px_-8px_rgba(15,23,42,0.25)]"
+                    >
+                      <li className="px-3 pb-1 pt-1.5 text-[13px] font-semibold text-ink-2">{t('blocked_title')}</li>
+                      {blockers.map((v) => {
+                        const st = STATUS_STYLE[v.status]
+                        const Icon = st.icon
+                        return (
+                          <li key={v.req.id}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpen(false)
+                                onJump(v.req.id)
+                              }}
+                              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-sunken"
+                            >
+                              <span className={`flex size-7 shrink-0 items-center justify-center rounded-full ${st.cls}`}>
+                                <Icon size={15} aria-hidden />
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate font-medium text-ink">{docTitle(v)}</span>
+                                <span className={`block text-[13px] ${st.cls.split(' ')[1]}`}>{reasonOf(v)}</span>
+                              </span>
+                            </button>
+                          </li>
+                        )
+                      })}
+                    </motion.ul>
+                  )}
+                </AnimatePresence>
               </>
             ) : (
               <span className="flex items-center gap-1.5 font-semibold text-ok">

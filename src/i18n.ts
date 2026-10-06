@@ -91,8 +91,8 @@ const en = {
   // Generate bar
   ready_count: '{ok} of {total} required documents ready',
   all_ready: 'Everything is ready. You can create the package.',
-  blocked_title: 'Fix these before creating the package:',
-  more_blockers: '+{n} more',
+  blocked_title: 'Fix these before creating the package',
+  to_fix: '{n} to fix',
   generate: 'Create package',
   generating: 'Creating…',
   with_index: 'Add index page',
@@ -193,8 +193,8 @@ const bn: Record<Key, string> = {
 
   ready_count: '{total}টির মধ্যে {ok}টি বাধ্যতামূলক কাগজ প্রস্তুত',
   all_ready: 'সব প্রস্তুত। এখন প্যাকেজ তৈরি করতে পারেন।',
-  blocked_title: 'প্যাকেজ তৈরির আগে এগুলো ঠিক করুন:',
-  more_blockers: 'আরও {n}টি',
+  blocked_title: 'প্যাকেজ তৈরির আগে এগুলো ঠিক করুন',
+  to_fix: '{n}টি ঠিক করতে হবে',
   generate: 'প্যাকেজ তৈরি করুন',
   generating: 'তৈরি হচ্ছে…',
   with_index: 'সূচিপত্র পাতা যোগ করুন',
