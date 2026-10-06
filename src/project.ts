@@ -4,6 +4,7 @@ import type { MatchState, Requirement, Tender, UploadedFile } from './types'
 import { parseRequirements } from './logic/requirements'
 import { isPng, DEFAULT_SEAL, type SealSettings } from './logic/seal'
 import { isValidISODate } from './logic/dates'
+import type { TenderBn } from './ai'
 
 export interface ProjectSeal {
   name: string
@@ -21,6 +22,7 @@ export interface ProjectData {
   withIndex: boolean
   seal: ProjectSeal | null
   sealSettings: SealSettings
+  tenderBn?: TenderBn | null // Bangla tender details made with AI help
 }
 
 // ---- base64 for the project file (JSON cannot hold raw bytes) ----
@@ -52,6 +54,7 @@ export function projectToJson(p: ProjectData): string {
     withIndex: p.withIndex,
     seal: p.seal && { name: p.seal.name, width: p.seal.width, height: p.seal.height, data: toBase64(p.seal.bytes) },
     sealSettings: p.sealSettings,
+    tenderBn: p.tenderBn ?? null,
   })
 }
 
@@ -116,6 +119,7 @@ export function jsonToProject(raw: string): { ok: true; project: ProjectData } |
       withIndex: d.withIndex === true,
       seal,
       sealSettings: cleanSettings(d.sealSettings),
+      tenderBn: cleanTenderBn(d.tenderBn),
     },
   }
 }
@@ -142,6 +146,13 @@ export function cleanMatch(raw: unknown, files: UploadedFile[], reqs: Requiremen
     if (r.has_expiry && isValidISODate(date)) out.expiry[r.id] = date
   }
   return out
+}
+
+function cleanTenderBn(raw: unknown): TenderBn | null {
+  if (!isObj(raw)) return null
+  const t = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, 300) : undefined)
+  const out = { title: t(raw.title), procuring_entity: t(raw.procuring_entity), bidder: t(raw.bidder) }
+  return out.title || out.procuring_entity || out.bidder ? out : null
 }
 
 function cleanSettings(raw: unknown): SealSettings {

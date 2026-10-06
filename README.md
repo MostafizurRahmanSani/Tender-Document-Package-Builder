@@ -46,20 +46,27 @@ npm test         # logic and PDF tests
 - Full Bangla and English interface; the choice is remembered; document names from `title_bn` / `title_en`; dates and numbers in the chosen language
 
 ## Bonus features
-- **Index page** (optional checkbox) after the cover, showing the page where each document starts
+All eight bonus tasks from the problem statement are done.
+- **Index page** (optional checkbox) after the cover, showing the page where each document starts. It also shows each document's **Bangla name**, drawn by the browser so the Bengali letters and vowel signs are shaped correctly
+- **Seal or signature**: upload a PNG, choose the pages (last / first / every page of each document, or a custom list like `3, 5-7`), position and size. It is placed above the footer, so it never covers it. Page lists are checked as you type
+- **Export checklist** as CSV (document, file name, pages, expiry date, status); opens in Excel with Bangla intact
+- **Save and reopen**: your work is saved automatically in this browser and offered again on the start screen ("Continue where you left off"). You can also **Save project file** and open it later, even on another computer. Both keep the PDFs, matches, expiry dates, seal and settings
 - **Auto-match** by file name: prefers the newest year (`trade_license_2026` over `2025`) and the original over copies like `file (1).pdf`
 - **Damaged and password-protected PDFs** are detected and shown with a clear message; the app never crashes on them
-- **Export checklist** as CSV (document, file name, pages, expiry date, status), opens in Excel with Bangla intact
+- **AI help** with your own API key (Groq or OpenRouter), fully optional: *AI match* suggests matches for files the name check missed, and *Translate with AI* gives the tender title, entity and bidder in Bangla. Only document titles and file names are sent, never the contents of a PDF. The key stays in the browser tab (session storage) and is never put in a project file, the saved copy or the code
+- **Light and dark mode**, light by default
 
 ## Deliverables
 - `output/T-2026-0417_Package.pdf`: built in the app from the sample pack (16 pages). Matches used: Trade License = `trade_license_2026.pdf` (the 2025 one is expired), Experience Certificate = `experience_cert.pdf` (its `(1)` copy is a duplicate), Signed Declaration = `scan_0042.pdf` (an unnamed scan of the declaration). `company_logo.png` is rejected as not a PDF.
 - `screenshots/`: document statuses in English and Bangla, the blocked state, mobile view
 
 ## Tech
-Vite, React, TypeScript, Tailwind CSS, Motion, pdf-lib, Lucide icons, Inter + Noto Sans Bengali (self-hosted). No backend.
+Vite, React, TypeScript, Tailwind CSS, Motion, pdf-lib, Lucide icons, Inter + Noto Sans Bengali (self-hosted). No backend: everything runs in the browser.
 
 ## Known problems
-- The PDF cover is English only (as the problem requires); Bangla on the PDF is not done
+- The PDF cover is English only, as the problem requires. Bangla names appear on the index page instead
+- On the index page the Bangla names are images, so that text cannot be selected or searched in the PDF
+- AI help was tested against a simulated service, not a live provider account
 - The expiry date picker shows dates in the browser's own format
 
 ## AI tools used

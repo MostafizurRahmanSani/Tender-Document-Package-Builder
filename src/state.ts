@@ -10,6 +10,7 @@ import { readPdf } from './pdf/readPdf'
 import { translate, type Key, type Vars } from './i18n'
 import { cleanMatch, jsonToProject, projectToJson, saveSession, type ProjectData, type ProjectError } from './project'
 import { saveBlob } from './download'
+import type { TenderBn } from './ai'
 
 interface State {
   tender: Tender | null
@@ -22,6 +23,7 @@ interface State {
   withIndex: boolean // add an index page after the cover
   seal: SealImage | null
   sealSettings: SealSettings
+  tenderBn: TenderBn | null // Bangla tender details made with AI help
 }
 
 type Action =
@@ -37,6 +39,7 @@ type Action =
   | { type: 'dismiss'; id: string }
   | { type: 'lang'; lang: Lang }
   | { type: 'restore'; project: ProjectData; seal: SealImage | null }
+  | { type: 'tenderBn'; value: TenderBn | null }
   | { type: 'withIndex'; value: boolean }
   | { type: 'seal'; seal: SealImage | null }
   | { type: 'sealSettings'; patch: Partial<SealSettings> }
@@ -46,9 +49,9 @@ const uid = () => Math.random().toString(36).slice(2, 10)
 function reducer(s: State, a: Action): State {
   switch (a.type) {
     case 'load':
-      return { ...s, tender: a.tender, requirements: a.requirements, match: EMPTY_MATCHES, history: [] }
+      return { ...s, tender: a.tender, requirements: a.requirements, match: EMPTY_MATCHES, history: [], tenderBn: null }
     case 'closeTender':
-      return { ...s, tender: null, requirements: [], match: EMPTY_MATCHES, history: [] }
+      return { ...s, tender: null, requirements: [], match: EMPTY_MATCHES, history: [], tenderBn: null }
     case 'addFile':
       return { ...s, files: [...s.files, a.file] }
     case 'updateFile':
@@ -98,8 +101,11 @@ function reducer(s: State, a: Action): State {
         withIndex: p.withIndex,
         seal: a.seal,
         sealSettings: p.sealSettings,
+        tenderBn: p.tenderBn ?? null,
       }
     }
+    case 'tenderBn':
+      return { ...s, tenderBn: a.value }
     case 'withIndex':
       return { ...s, withIndex: a.value }
     case 'seal':
@@ -137,6 +143,7 @@ export function useStore() {
     withIndex: false,
     seal: null,
     sealSettings: DEFAULT_SEAL,
+    tenderBn: null,
   }))
 
   // Upload checks need the latest totals even while several files are being read.
@@ -165,6 +172,7 @@ export function useStore() {
       withIndex: st.withIndex,
       seal: st.seal && { name: st.seal.name, bytes: st.seal.bytes, width: st.seal.width, height: st.seal.height },
       sealSettings: st.sealSettings,
+      tenderBn: st.tenderBn,
     }
   }, [])
 
@@ -179,7 +187,7 @@ export function useStore() {
       setSavedAt(snap.savedAt)
     }, 800)
     return () => window.clearTimeout(id)
-  }, [s.tender, s.requirements, s.files, s.match, s.withIndex, s.seal, s.sealSettings, snapshot])
+  }, [s.tender, s.requirements, s.files, s.match, s.withIndex, s.seal, s.sealSettings, s.tenderBn, snapshot])
 
   const t = useCallback((key: Key, vars?: Vars) => translate(s.lang, key, vars), [s.lang])
 
@@ -275,6 +283,21 @@ export function useStore() {
         let next = cur.match
         let made = 0
         for (const [r, f] of suggestMatches(cur.requirements, cur.files, taken)) {
+          const after = assign(next, r, f, d)
+          if (after !== next) made++
+          next = after
+        }
+        dispatch({ type: 'match', next, record: true })
+        return made
+      },
+      setTenderBn: (value: TenderBn | null) => dispatch({ type: 'tenderBn', value }),
+      // Apply suggested pairs (from AI help). Returns how many were really matched.
+      applyMatches: (pairs: Array<[string, string]>): number => {
+        const d = findDuplicates(live.current.files)
+        let next = live.current.match
+        let made = 0
+        for (const [r, f] of pairs) {
+          if (r in next.matches) continue // never overwrite a match the user already made
           const after = assign(next, r, f, d)
           if (after !== next) made++
           next = after

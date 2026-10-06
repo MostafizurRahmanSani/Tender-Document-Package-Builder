@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { CalendarClock, FileText, Undo2, Wand2, X } from 'lucide-react'
+import { CalendarClock, FileText, LoaderCircle, Sparkles, Undo2, Wand2, X } from 'lucide-react'
 import type { Store, RequirementView } from '../state'
 import { requirementOf, duplicateLock } from '../logic/match'
 import { Button, StatusBadge, STATUS_STYLE, formatDate } from './ui'
@@ -9,9 +9,11 @@ interface Props {
   store: Store
   flash: string | null
   onAutoMatch: () => void
+  onAiMatch: () => void
+  aiBusy: boolean
 }
 
-export function Requirements({ store, flash, onAutoMatch }: Props) {
+export function Requirements({ store, flash, onAutoMatch, onAiMatch, aiBusy }: Props) {
   const { state, t, views, actions } = store
   const readyFiles = state.files.filter((f) => f.state === 'ready')
 
@@ -27,6 +29,10 @@ export function Requirements({ store, flash, onAutoMatch }: Props) {
         <div className="flex gap-1">
           <Button variant="ghost" size="sm" onClick={onAutoMatch} disabled={!readyFiles.length}>
             <Wand2 size={15} aria-hidden /> {t('auto_match')}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onAiMatch} disabled={!readyFiles.length || aiBusy}>
+            {aiBusy ? <LoaderCircle size={15} className="animate-spin" aria-hidden /> : <Sparkles size={15} aria-hidden />}
+            {aiBusy ? t('ai_matching') : t('ai_match')}
           </Button>
           <Button variant="ghost" size="sm" onClick={actions.undo} disabled={!state.history.length}>
             <Undo2 size={15} aria-hidden /> {t('undo')}

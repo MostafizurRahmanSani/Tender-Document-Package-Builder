@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
-import { CalendarDays, Building2, Briefcase, CircleCheck, Moon, RotateCcw, Save, Sun, Wand2 } from 'lucide-react'
+import { CalendarDays, Building2, Briefcase, CircleCheck, LoaderCircle, Moon, RotateCcw, Save, Sparkles, Sun, Wand2 } from 'lucide-react'
 import { useStore } from './state'
 import { Start } from './components/Start'
 import { Requirements } from './components/Requirements'
@@ -11,13 +11,21 @@ import { Button, formatDate } from './components/ui'
 import type { Lang } from './types'
 import { toBnDigits } from './i18n'
 import { useTheme } from './theme'
+import { useAiSettings } from './aiSettings'
+import { AiDialog } from './components/AiDialog'
+import { AiError, suggestMatchesAI, translateTenderAI } from './ai'
+import type { Key } from './i18n'
 
 export default function App() {
   const store = useStore()
   const { theme, toggle } = useTheme()
   const { state, t, actions } = store
   const [flash, setFlash] = useState<string | null>(null)
-  const [toast, setToast] = useState<number | null>(null) // matches made by auto-match
+  type Toast = { kind: 'auto'; n: number } | { kind: 'ai'; n: number } | { kind: 'msg'; key: Key }
+  const [toast, setToast] = useState<Toast | null>(null)
+  const ai = useAiSettings()
+  const [aiOpen, setAiOpen] = useState(false)
+  const [aiBusy, setAiBusy] = useState<'match' | 'translate' | null>(null)
   const timer = useRef<number | undefined>(undefined)
 
   useEffect(() => () => window.clearTimeout(timer.current), [])
@@ -29,18 +37,54 @@ export default function App() {
     window.setTimeout(() => setFlash(null), 1400)
   }
 
-  function autoMatch() {
-    const n = actions.autoMatch()
-    setToast(n)
+  function show(next: Toast) {
+    setToast(next)
     window.clearTimeout(timer.current)
-    timer.current = window.setTimeout(() => setToast(null), 4000)
+    timer.current = window.setTimeout(() => setToast(null), 4500)
+  }
+
+  function autoMatch() {
+    show({ kind: 'auto', n: actions.autoMatch() })
+  }
+
+  const aiError = (e: unknown): Key => `ai_err_${e instanceof AiError ? e.code : 'network'}` as Key
+
+  // AI help: suggest matches for files that are still unmatched. Only titles and file names are sent.
+  async function aiMatch() {
+    if (!ai.hasKey) return setAiOpen(true)
+    setAiBusy('match')
+    try {
+      const cur = state
+      const taken = { reqs: new Set(Object.keys(cur.match.matches)), files: new Set(Object.values(cur.match.matches)) }
+      const pairs = await suggestMatchesAI(ai.settings, cur.requirements, cur.files, taken)
+      show({ kind: 'ai', n: actions.applyMatches(pairs) })
+    } catch (e) {
+      show({ kind: 'msg', key: aiError(e) })
+    } finally {
+      setAiBusy(null)
+    }
+  }
+
+  async function aiTranslate() {
+    if (!tender) return
+    if (!ai.hasKey) return setAiOpen(true)
+    setAiBusy('translate')
+    try {
+      actions.setTenderBn(await translateTenderAI(ai.settings, tender))
+      show({ kind: 'msg', key: 'ai_translated' })
+    } catch (e) {
+      show({ kind: 'msg', key: aiError(e) })
+    } finally {
+      setAiBusy(null)
+    }
   }
 
   const tender = state.tender
   const bn = state.lang === 'bn'
-  const tenderTitle = tender ? (bn && tender.title_bn) || tender.title : ''
-  const entity = tender ? (bn && tender.procuring_entity_bn) || tender.procuring_entity : ''
-  const bidder = tender ? (bn && tender.bidder_bn) || tender.bidder : ''
+  const tenderTitle = tender ? (bn && (tender.title_bn || state.tenderBn?.title)) || tender.title : ''
+  const entity = tender ? (bn && (tender.procuring_entity_bn || state.tenderBn?.procuring_entity)) || tender.procuring_entity : ''
+  const bidder = tender ? (bn && (tender.bidder_bn || state.tenderBn?.bidder)) || tender.bidder : ''
+  const needsTranslation = !!tender && bn && !state.tenderBn && !(tender.title_bn && tender.procuring_entity_bn && tender.bidder_bn)
   const tenderIdShown = tender ? (state.lang === 'bn' ? toBnDigits(tender.tender_id) : tender.tender_id) : ''
 
   return (
@@ -58,6 +102,16 @@ export default function App() {
               </span>
             )}
             <div className="ml-auto flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setAiOpen(true)}
+                aria-label={t('ai_title')}
+                title={t('ai_title')}
+                className="relative flex size-9 items-center justify-center rounded-md border border-line bg-sunken text-ink-2 transition-colors hover:text-ink"
+              >
+                <Sparkles size={17} aria-hidden />
+                {ai.hasKey && <span aria-hidden className="absolute right-1 top-1 size-2 rounded-full bg-ok ring-2 ring-sunken" />}
+              </button>
               <button
                 type="button"
                 onClick={toggle}
@@ -89,6 +143,17 @@ export default function App() {
                       {t('tender_id')} · {tenderIdShown}
                     </p>
                     <h1 className="mt-1 text-[clamp(1.5rem,2.6vw,2rem)] font-semibold leading-tight tracking-[-0.02em] text-ink">{tenderTitle}</h1>
+                    {needsTranslation && (
+                      <button
+                        type="button"
+                        onClick={aiTranslate}
+                        disabled={aiBusy === 'translate'}
+                        className="mt-1.5 inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] font-medium text-accent-fg hover:bg-accent-soft disabled:opacity-60"
+                      >
+                        {aiBusy === 'translate' ? <LoaderCircle size={14} className="animate-spin" aria-hidden /> : <Sparkles size={14} aria-hidden />}
+                        {aiBusy === 'translate' ? t('ai_translating') : t('ai_translate')}
+                      </button>
+                    )}
                   </div>
                   <div className="flex flex-col items-end gap-1.5">
                     <div className="flex flex-wrap justify-end gap-2">
@@ -115,7 +180,7 @@ export default function App() {
 
               <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1.65fr)_minmax(320px,1fr)] lg:gap-12">
                 <div className="min-w-0">
-                  <Requirements store={store} flash={flash} onAutoMatch={autoMatch} />
+                  <Requirements store={store} flash={flash} onAutoMatch={autoMatch} onAiMatch={aiMatch} aiBusy={aiBusy === 'match'} />
                   <Seal store={store} />
                 </div>
                 <aside className="lg:sticky lg:top-24 lg:self-start">
@@ -127,8 +192,10 @@ export default function App() {
           </>
         )}
 
+        <AiDialog open={aiOpen} onClose={() => setAiOpen(false)} t={t} settings={ai.settings} onChange={ai.update} />
+
         <AnimatePresence>
-          {toast !== null && (
+          {toast && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -136,7 +203,12 @@ export default function App() {
               role="status"
               className="fixed bottom-36 left-1/2 z-40 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm text-paper shadow-lg lg:bottom-28"
             >
-              <Wand2 size={15} aria-hidden /> {toast > 0 ? t('auto_matched', { n: toast }) : t('auto_matched_none')}
+              <Wand2 size={15} aria-hidden />{' '}
+              {toast.kind === 'msg'
+                ? t(toast.key)
+                : toast.n > 0
+                  ? t(toast.kind === 'ai' ? 'ai_matched' : 'auto_matched', { n: toast.n })
+                  : t(toast.kind === 'ai' ? 'ai_matched_none' : 'auto_matched_none')}
             </motion.div>
           )}
         </AnimatePresence>
