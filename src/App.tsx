@@ -5,6 +5,7 @@ import { useStore } from './state'
 import { Start } from './components/Start'
 import { Requirements } from './components/Requirements'
 import { Files } from './components/Files'
+import { Seal } from './components/Seal'
 import { GenerateBar } from './components/GenerateBar'
 import { Button, formatDate } from './components/ui'
 import type { Lang } from './types'
@@ -101,7 +102,10 @@ export default function App() {
               </motion.section>
 
               <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1.65fr)_minmax(320px,1fr)] lg:gap-12">
-                <Requirements store={store} flash={flash} onAutoMatch={autoMatch} />
+                <div className="min-w-0">
+                  <Requirements store={store} flash={flash} onAutoMatch={autoMatch} />
+                  <Seal store={store} />
+                </div>
                 <aside className="lg:sticky lg:top-24 lg:self-start">
                   <Files store={store} />
                 </aside>

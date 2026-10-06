@@ -49,3 +49,12 @@ export interface Notice {
   kind: NoticeKind
   name: string
 }
+
+// Seal or signature: one PNG that can be placed on chosen pages of the package.
+export interface SealImage {
+  name: string
+  bytes: ArrayBuffer
+  width: number
+  height: number
+  url: string // object URL for the on-screen preview only
+}

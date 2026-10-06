@@ -19,12 +19,12 @@ function save(blob: Blob, name: string) {
 }
 
 export function GenerateBar({ store, onJump }: { store: Store; onJump: (reqId: string) => void }) {
-  const { state, t, views, blockers } = store
+  const { state, t, views, blockers, actions } = store
   const lang = state.lang
   const tender = state.tender!
   const [busy, setBusy] = useState(false)
-  const [withIndex, setWithIndex] = useState(false)
-  const [result, setResult] = useState<{ blob: Blob; pages: number } | null>(null)
+  const withIndex = state.withIndex
+  const [result, setResult] = useState<{ blob: Blob; pages: number; skipped: string[] } | null>(null)
   const [failed, setFailed] = useState(false)
   const [open, setOpen] = useState(false) // list of issues
   const issuesRef = useRef<HTMLDivElement>(null)
@@ -66,10 +66,14 @@ export function GenerateBar({ store, onJump }: { store: Store; onJump: (reqId: s
       const items = views
         .filter((v) => v.status === 'ok' && v.file?.bytes)
         .map((v) => ({ order: v.req.order, title: v.req.title_en, titleBn: v.req.title_bn, bytes: v.file!.bytes! }))
-      const r = await buildPackage(tender, items, todayLocalISO(), { withIndex, renderBangla: withIndex ? renderBanglaText : undefined })
+      const r = await buildPackage(tender, items, todayLocalISO(), {
+        withIndex,
+        renderBangla: withIndex ? renderBanglaText : undefined,
+        seal: state.seal ? { bytes: state.seal.bytes, settings: state.sealSettings } : undefined,
+      })
       const blob = new Blob([r.bytes as BlobPart], { type: 'application/pdf' })
       save(blob, fileName)
-      setResult({ blob, pages: r.totalPages })
+      setResult({ blob, pages: r.totalPages, skipped: r.sealInvalid })
     } catch {
       setFailed(true)
     } finally {
@@ -177,7 +181,7 @@ export function GenerateBar({ store, onJump }: { store: Store; onJump: (reqId: s
 
         <div className="flex items-center gap-2 sm:gap-3">
           <label className="flex items-center gap-2 text-sm text-ink-2" title={t('with_index')}>
-            <input type="checkbox" checked={withIndex} onChange={(e) => setWithIndex(e.target.checked)} className="size-4 accent-[var(--color-accent)]" />
+            <input type="checkbox" checked={withIndex} onChange={(e) => actions.setWithIndex(e.target.checked)} className="size-4 accent-[var(--color-accent)]" />
             <span className="hidden sm:inline">{t('with_index')}</span>
             <span className="sm:hidden">{t('index_short')}</span>
           </label>
@@ -205,6 +209,7 @@ export function GenerateBar({ store, onJump }: { store: Store; onJump: (reqId: s
                 <CircleCheck size={16} aria-hidden /> {t('done', { pages: result.pages })}
               </span>
               <span className="tabular text-muted">{fileName}</span>
+              {result.skipped.length > 0 && <span className="text-warn">{t('seal_ignored', { list: result.skipped.join(', ') })}</span>}
               <button type="button" onClick={() => save(result.blob, fileName)} className="inline-flex items-center gap-1 font-medium text-accent-fg hover:underline">
                 <Download size={14} aria-hidden /> {t('download_again')}
               </button>

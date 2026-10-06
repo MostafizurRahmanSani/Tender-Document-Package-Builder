@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
-import type { Lang, MatchState, Notice, NoticeKind, Requirement, Status, Tender, UploadedFile } from './types'
+import type { Lang, MatchState, Notice, NoticeKind, Requirement, SealImage, Status, Tender, UploadedFile } from './types'
+import { DEFAULT_SEAL, type SealSettings } from './logic/seal'
 import { EMPTY_MATCHES, assign, removeFile, setExpiry, unassign } from './logic/match'
 import { findDuplicates } from './logic/duplicates'
 import { statusOf, isBlocking } from './logic/status'
@@ -16,6 +17,9 @@ interface State {
   history: MatchState[] // undo stack
   notices: Notice[]
   lang: Lang
+  withIndex: boolean // add an index page after the cover
+  seal: SealImage | null
+  sealSettings: SealSettings
 }
 
 type Action =
@@ -30,6 +34,9 @@ type Action =
   | { type: 'notice'; kind: NoticeKind; name: string }
   | { type: 'dismiss'; id: string }
   | { type: 'lang'; lang: Lang }
+  | { type: 'withIndex'; value: boolean }
+  | { type: 'seal'; seal: SealImage | null }
+  | { type: 'sealSettings'; patch: Partial<SealSettings> }
 
 const uid = () => Math.random().toString(36).slice(2, 10)
 
@@ -74,6 +81,13 @@ function reducer(s: State, a: Action): State {
       return { ...s, notices: s.notices.filter((n) => n.id !== a.id) }
     case 'lang':
       return { ...s, lang: a.lang }
+    case 'withIndex':
+      return { ...s, withIndex: a.value }
+    case 'seal':
+      if (s.seal && s.seal !== a.seal) URL.revokeObjectURL(s.seal.url)
+      return { ...s, seal: a.seal }
+    case 'sealSettings':
+      return { ...s, sealSettings: { ...s.sealSettings, ...a.patch } }
   }
 }
 
@@ -101,6 +115,9 @@ export function useStore() {
     history: [],
     notices: [],
     lang: savedLang(),
+    withIndex: false,
+    seal: null,
+    sealSettings: DEFAULT_SEAL,
   }))
 
   // Upload checks need the latest totals even while several files are being read.
@@ -198,6 +215,9 @@ export function useStore() {
       },
       dismiss: (id: string) => dispatch({ type: 'dismiss', id }),
       setLang: (lang: Lang) => dispatch({ type: 'lang', lang }),
+      setWithIndex: (value: boolean) => dispatch({ type: 'withIndex', value }),
+      setSeal: (seal: SealImage | null) => dispatch({ type: 'seal', seal }),
+      setSealSettings: (patch: Partial<SealSettings>) => dispatch({ type: 'sealSettings', patch }),
     }),
     [addFiles],
   )
