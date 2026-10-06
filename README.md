@@ -3,7 +3,7 @@
 A browser-only web app that helps office staff turn a set of tender PDFs into one complete, checked and correctly ordered PDF package, ready to submit. Built for the AI DevFest 2026 vibe-coding contest.
 
 **Name:** Mostafizur Rahman Sani
-**Live site (HTTPS):** _coming soon_
+**Live site (HTTPS):** https://mostafizurrahmansani.github.io/Tender-Document-Package-Builder/
 
 ## What it does
 - Loads the tender's `requirements.json` and lists the required documents in order
@@ -73,7 +73,7 @@ Vite, React, TypeScript, Tailwind CSS, Motion, pdf-lib, Lucide icons, Inter + No
 - Claude Code
 
 ## Most useful prompt
-> _to be added_
+> "start phase 1, please use modern sleek good design for the frontend, with all the logics perfeclty done" (with the full problem statement and a written spec as context)
 
 ## License
 MIT. See LICENSE.
