@@ -1,16 +1,27 @@
 import { PDFDocument, PDFFont, PDFPage, StandardFonts, degrees, rgb } from 'pdf-lib'
 import type { Tender } from '../types'
+import { sealOrigin, sealTargets, type SealSettings } from '../logic/seal'
+import type { TextImageRenderer } from './bnImage'
 
 export interface PackageItem {
   order: number
   title: string // English title, the cover is always in English
+  titleBn?: string // shown next to it on the index page when a Bangla renderer is supplied
   bytes: ArrayBuffer
+}
+
+export interface BuildOptions {
+  withIndex?: boolean
+  renderBangla?: TextImageRenderer // draws the Bangla names on the index page (as images, shaped by the browser)
+  seal?: { bytes: ArrayBuffer; settings: SealSettings }
 }
 
 export interface PackageResult {
   bytes: Uint8Array
   totalPages: number
   starts: number[] // page where each item starts (1-based)
+  sealedPages: number[]
+  sealInvalid: string[] // parts of a custom page list that were not understood or out of range
 }
 
 // Height of the strip added under every document page for the footer.
@@ -112,7 +123,15 @@ function drawCover(page: PDFPage, f: Fonts, tender: Tender, madeOn: string, item
   })
 }
 
-function drawIndex(page: PDFPage, f: Fonts, items: PackageItem[], starts: number[]) {
+// Index page: English name, the Bangla name beside it (when a renderer is available), start page.
+async function drawIndex(
+  out: PDFDocument,
+  page: PDFPage,
+  f: Fonts,
+  items: PackageItem[],
+  starts: number[],
+  renderBangla?: TextImageRenderer,
+) {
   const left = 56
   const width = A4.w - left * 2
   page.drawRectangle({ x: 0, y: A4.h - 8, width: A4.w, height: 8, color: ACCENT })
@@ -120,19 +139,35 @@ function drawIndex(page: PDFPage, f: Fonts, items: PackageItem[], starts: number
   page.drawText('Index', { x: left, y, size: 22, font: f.bold, color: INK })
   y -= 36
   const bottom = FOOTER_BAND + 40
-  const rowH = Math.min(24, (y - bottom) / Math.max(items.length + 1, 1))
+  const rowH = Math.min(26, (y - bottom) / Math.max(items.length + 1, 1))
   const size = Math.max(6.5, Math.min(11, rowH * 0.5))
-  const pageX = left + width - 50
-  page.drawText('Document', { x: left, y, size: size - 1, font: f.bold, color: MUTED })
+  const pageX = left + width - 52
+  const enX = left + 30
+  const bnX = left + 262
+  const enW = (renderBangla ? bnX - 10 : pageX - 20) - enX
+  const bnW = pageX - 12 - bnX
+
+  // Draws Bangla text as an image whose baseline sits on baseY. Skipped quietly if it cannot be drawn.
+  const bangla = async (text: string, x: number, baseY: number, bold: boolean, hex: string) => {
+    const img = await renderBangla?.(text, { bold, sizePt: size + 0.5, maxWidthPt: bnW, color: hex })
+    if (!img) return
+    const png = await out.embedPng(img.bytes)
+    page.drawImage(png, { x, y: baseY - img.descentPt, width: img.widthPt, height: img.heightPt })
+  }
+
+  page.drawText('No.', { x: left, y, size: size - 1, font: f.bold, color: MUTED })
+  page.drawText('Document', { x: enX, y, size: size - 1, font: f.bold, color: MUTED })
+  if (renderBangla) await bangla('নথির নাম', bnX, y, true, '#475569') // "নথির নাম"
   page.drawText('Starts on', { x: pageX, y, size: size - 1, font: f.bold, color: MUTED })
   y -= rowH
-  items.forEach((it, i) => {
-    const title = fit(f.regular, `${i + 1}.  ${it.title}`, size, pageX - left - 20)
-    page.drawText(title, { x: left, y, size, font: f.regular, color: INK })
+  for (const [i, it] of items.entries()) {
+    page.drawText(String(i + 1), { x: left, y, size, font: f.regular, color: MUTED })
+    page.drawText(fit(f.regular, it.title, size, enW), { x: enX, y, size, font: f.regular, color: INK })
+    if (renderBangla && it.titleBn && it.titleBn !== it.title) await bangla(it.titleBn, bnX, y, false, '#0f172a')
     page.drawText(`Page ${starts[i]}`, { x: pageX, y, size, font: f.bold, color: INK })
     page.drawLine({ start: { x: left, y: y - rowH * 0.35 }, end: { x: left + width, y: y - rowH * 0.35 }, thickness: 0.4, color: LINE })
     y -= rowH
-  })
+  }
 }
 
 // Places an embedded page on a taller page, keeping its original rotation.
@@ -157,7 +192,7 @@ export async function buildPackage(
   tender: Tender,
   items: PackageItem[],
   madeOn: string,
-  withIndex = false,
+  opts: BuildOptions = {},
 ): Promise<PackageResult> {
   const out = await PDFDocument.create()
   out.setTitle(`${tender.tender_id} Package`)
@@ -171,7 +206,7 @@ export async function buildPackage(
   const sources = await Promise.all(items.map((it) => PDFDocument.load(it.bytes, { updateMetadata: false })))
   const pageCounts = sources.map((s) => s.getPageCount())
 
-  const front = withIndex ? 2 : 1
+  const front = opts.withIndex ? 2 : 1
   const starts: number[] = []
   let next = front + 1
   for (const n of pageCounts) {
@@ -180,7 +215,7 @@ export async function buildPackage(
   }
 
   drawCover(out.addPage([A4.w, A4.h]), fonts, tender, madeOn, items, pageCounts)
-  if (withIndex) drawIndex(out.addPage([A4.w, A4.h]), fonts, items, starts)
+  if (opts.withIndex) await drawIndex(out, out.addPage([A4.w, A4.h]), fonts, items, starts, opts.renderBangla)
 
   for (const src of sources) {
     const pages = src.getPages()
@@ -201,9 +236,28 @@ export async function buildPackage(
     }
   }
 
-  // Footer pass: the total is only known once every page exists.
   const all = out.getPages()
   const total = all.length
+
+  // Seal or signature (optional): drawn on the chosen pages, above the footer strip.
+  let sealedPages: number[] = []
+  let sealInvalid: string[] = []
+  if (opts.seal) {
+    const img = await out.embedPng(opts.seal.bytes)
+    const target = sealTargets(opts.seal.settings, starts, pageCounts, total)
+    sealInvalid = target.invalid
+    sealedPages = target.pages
+    for (const n of target.pages) {
+      const page = all[n - 1]
+      const { width, height } = page.getSize()
+      const sw = (opts.seal.settings.widthPct / 100) * width
+      const sh = sw * (img.height / img.width)
+      const { x, y } = sealOrigin(opts.seal.settings.position, width, height, sw, sh, FOOTER_BAND)
+      page.drawImage(img, { x, y, width: sw, height: sh })
+    }
+  }
+
+  // Footer pass: the total is only known once every page exists.
   const size = 9
   all.forEach((page, i) => {
     const { width } = page.getSize()
@@ -212,5 +266,5 @@ export async function buildPackage(
     page.drawText(text, { x: (width - tw) / 2, y: (FOOTER_BAND - size) / 2 + 1, size, font: fonts.regular, color: INK })
   })
 
-  return { bytes: await out.save(), totalPages: total, starts }
+  return { bytes: await out.save(), totalPages: total, starts, sealedPages, sealInvalid }
 }

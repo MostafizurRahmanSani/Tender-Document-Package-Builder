@@ -5,6 +5,7 @@ import type { Store } from '../state'
 import { STATUS_STYLE, Button, formatDate } from './ui'
 import { buildPackage } from '../pdf/buildPackage'
 import { todayLocalISO } from '../logic/dates'
+import { renderBanglaText } from '../pdf/bnImage'
 
 function save(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob)
@@ -64,8 +65,8 @@ export function GenerateBar({ store, onJump }: { store: Store; onJump: (reqId: s
     try {
       const items = views
         .filter((v) => v.status === 'ok' && v.file?.bytes)
-        .map((v) => ({ order: v.req.order, title: v.req.title_en, bytes: v.file!.bytes! }))
-      const r = await buildPackage(tender, items, todayLocalISO(), withIndex)
+        .map((v) => ({ order: v.req.order, title: v.req.title_en, titleBn: v.req.title_bn, bytes: v.file!.bytes! }))
+      const r = await buildPackage(tender, items, todayLocalISO(), { withIndex, renderBangla: withIndex ? renderBanglaText : undefined })
       const blob = new Blob([r.bytes as BlobPart], { type: 'application/pdf' })
       save(blob, fileName)
       setResult({ blob, pages: r.totalPages })
