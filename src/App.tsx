@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
-import { CalendarDays, Building2, Briefcase, Moon, RotateCcw, Sun, Wand2 } from 'lucide-react'
+import { CalendarDays, Building2, Briefcase, CircleCheck, Moon, RotateCcw, Save, Sun, Wand2 } from 'lucide-react'
 import { useStore } from './state'
 import { Start } from './components/Start'
 import { Requirements } from './components/Requirements'
@@ -73,7 +73,7 @@ export default function App() {
         </header>
 
         {!tender ? (
-          <Start t={t} onLoaded={actions.load} />
+          <Start t={t} lang={state.lang} onLoaded={actions.load} onResume={actions.restore} onOpenProject={actions.openProjectFile} />
         ) : (
           <>
             <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 pb-10 sm:px-8">
@@ -90,9 +90,21 @@ export default function App() {
                     </p>
                     <h1 className="mt-1 text-[clamp(1.5rem,2.6vw,2rem)] font-semibold leading-tight tracking-[-0.02em] text-ink">{tenderTitle}</h1>
                   </div>
-                  <Button variant="secondary" size="sm" onClick={actions.closeTender}>
-                    <RotateCcw size={14} aria-hidden /> {t('change_tender')}
-                  </Button>
+                  <div className="flex flex-col items-end gap-1.5">
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <Button variant="secondary" size="sm" onClick={actions.saveProjectFile}>
+                        <Save size={14} aria-hidden /> {t('save_project')}
+                      </Button>
+                      <Button variant="secondary" size="sm" onClick={actions.closeTender}>
+                        <RotateCcw size={14} aria-hidden /> {t('change_tender')}
+                      </Button>
+                    </div>
+                    {store.savedAt && (
+                      <span className="flex items-center gap-1 text-[13px] text-muted" role="status">
+                        <CircleCheck size={13} className="text-ok" aria-hidden /> {t('autosaved')}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <dl className="mt-4 grid gap-x-8 gap-y-3 sm:grid-cols-3">
                   <Meta icon={Building2} label={t('procuring_entity')} value={entity} />

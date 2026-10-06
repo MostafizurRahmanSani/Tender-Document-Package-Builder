@@ -141,6 +141,16 @@ const en = {
   pos_top_right: 'Top right',
   pos_top_left: 'Top left',
   pos_center: 'Center',
+  save_project: 'Save project file',
+  autosaved: 'Auto-saved in this browser',
+  open_project: 'Open a saved project file',
+  project_bad: 'This is not a project file saved by this app.',
+  project_version: 'This project file was saved by a newer version of the app.',
+  resume_title: 'Continue where you left off',
+  resume_meta: '{files} files · {matched} matched · saved {when}',
+  resume_continue: 'Continue',
+  resume_discard: 'Discard saved work',
+  resume_local: 'Saved only in this browser, on this computer.',
 } as const
 
 export type Key = keyof typeof en
@@ -278,6 +288,16 @@ const bn: Record<Key, string> = {
   pos_top_right: 'ওপরে ডানে',
   pos_top_left: 'ওপরে বামে',
   pos_center: 'মাঝখানে',
+  save_project: 'প্রজেক্ট ফাইল সংরক্ষণ',
+  autosaved: 'এই ব্রাউজারে স্বয়ংক্রিয়ভাবে সংরক্ষিত',
+  open_project: 'সংরক্ষিত প্রজেক্ট ফাইল খুলুন',
+  project_bad: 'এটি এই অ্যাপে সংরক্ষিত কোনো প্রজেক্ট ফাইল নয়।',
+  project_version: 'প্রজেক্ট ফাইলটি অ্যাপের নতুন সংস্করণে সংরক্ষিত।',
+  resume_title: 'যেখানে থেমেছিলেন সেখান থেকে চালিয়ে যান',
+  resume_meta: '{files}টি ফাইল · {matched}টি মেলানো · সংরক্ষিত {when}',
+  resume_continue: 'চালিয়ে যান',
+  resume_discard: 'সংরক্ষিত কাজ মুছুন',
+  resume_local: 'শুধু এই কম্পিউটারের এই ব্রাউজারে সংরক্ষিত।',
 }
 
 const dict: Record<Lang, Record<Key, string>> = { en, bn }

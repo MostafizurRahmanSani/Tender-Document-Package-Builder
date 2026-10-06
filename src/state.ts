@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import type { Lang, MatchState, Notice, NoticeKind, Requirement, SealImage, Status, Tender, UploadedFile } from './types'
 import { DEFAULT_SEAL, type SealSettings } from './logic/seal'
 import { EMPTY_MATCHES, assign, removeFile, setExpiry, unassign } from './logic/match'
@@ -8,6 +8,8 @@ import { hasPdfSignature, limitProblem, sha256Hex } from './logic/upload'
 import { suggestMatches } from './logic/autoMatch'
 import { readPdf } from './pdf/readPdf'
 import { translate, type Key, type Vars } from './i18n'
+import { cleanMatch, jsonToProject, projectToJson, saveSession, type ProjectData, type ProjectError } from './project'
+import { saveBlob } from './download'
 
 interface State {
   tender: Tender | null
@@ -34,6 +36,7 @@ type Action =
   | { type: 'notice'; kind: NoticeKind; name: string }
   | { type: 'dismiss'; id: string }
   | { type: 'lang'; lang: Lang }
+  | { type: 'restore'; project: ProjectData; seal: SealImage | null }
   | { type: 'withIndex'; value: boolean }
   | { type: 'seal'; seal: SealImage | null }
   | { type: 'sealSettings'; patch: Partial<SealSettings> }
@@ -81,6 +84,22 @@ function reducer(s: State, a: Action): State {
       return { ...s, notices: s.notices.filter((n) => n.id !== a.id) }
     case 'lang':
       return { ...s, lang: a.lang }
+    case 'restore': {
+      const p = a.project
+      if (s.seal) URL.revokeObjectURL(s.seal.url)
+      return {
+        ...s,
+        tender: p.tender,
+        requirements: p.requirements,
+        files: p.files,
+        match: cleanMatch(p.match, p.files, p.requirements),
+        history: [],
+        notices: [],
+        withIndex: p.withIndex,
+        seal: a.seal,
+        sealSettings: p.sealSettings,
+      }
+    }
     case 'withIndex':
       return { ...s, withIndex: a.value }
     case 'seal':
@@ -133,6 +152,34 @@ export function useStore() {
       /* storage blocked: the choice just won't be remembered */
     }
   }, [s.lang])
+
+  // Everything needed to resume: only fully read files (errors and files still loading are left out).
+  const snapshot = useCallback((st: State): ProjectData | null => {
+    if (!st.tender) return null
+    return {
+      savedAt: Date.now(),
+      tender: st.tender,
+      requirements: st.requirements,
+      files: st.files.filter((f) => f.state === 'ready' && f.bytes),
+      match: st.match,
+      withIndex: st.withIndex,
+      seal: st.seal && { name: st.seal.name, bytes: st.seal.bytes, width: st.seal.width, height: st.seal.height },
+      sealSettings: st.sealSettings,
+    }
+  }, [])
+
+  // Automatic copy in this browser, a moment after the last change.
+  const [savedAt, setSavedAt] = useState<number | null>(null)
+  useEffect(() => {
+    if (!s.tender || s.files.some((f) => f.state === 'reading')) return
+    const id = window.setTimeout(async () => {
+      const snap = snapshot(live.current)
+      if (!snap) return
+      await saveSession(snap)
+      setSavedAt(snap.savedAt)
+    }, 800)
+    return () => window.clearTimeout(id)
+  }, [s.tender, s.requirements, s.files, s.match, s.withIndex, s.seal, s.sealSettings, snapshot])
 
   const t = useCallback((key: Key, vars?: Vars) => translate(s.lang, key, vars), [s.lang])
 
@@ -189,6 +236,28 @@ export function useStore() {
     () => ({
       load: (tender: Tender, requirements: Requirement[]) => dispatch({ type: 'load', tender, requirements }),
       closeTender: () => dispatch({ type: 'closeTender' }),
+      // Reopen saved work (from the browser copy or a project file). Builds the seal preview URL here.
+      restore: (project: ProjectData) => {
+        const seal: SealImage | null = project.seal
+          ? { ...project.seal, url: URL.createObjectURL(new Blob([project.seal.bytes], { type: 'image/png' })) }
+          : null
+        dispatch({ type: 'restore', project, seal })
+      },
+      saveProjectFile: () => {
+        const snap = snapshot(live.current)
+        if (!snap) return
+        saveBlob(new Blob([projectToJson(snap)], { type: 'application/json' }), `${snap.tender.tender_id}_Project.json`)
+      },
+      // Returns an error key, or null when the project was opened.
+      openProjectFile: async (file: File): Promise<ProjectError | null> => {
+        const r = jsonToProject(await file.text())
+        if (!r.ok) return r.error
+        const seal: SealImage | null = r.project.seal
+          ? { ...r.project.seal, url: URL.createObjectURL(new Blob([r.project.seal.bytes], { type: 'image/png' })) }
+          : null
+        dispatch({ type: 'restore', project: r.project, seal })
+        return null
+      },
       addFiles,
       removeFile: (id: string) => dispatch({ type: 'removeFile', id }),
       removeAll: () => dispatch({ type: 'removeAll' }),
@@ -219,10 +288,10 @@ export function useStore() {
       setSeal: (seal: SealImage | null) => dispatch({ type: 'seal', seal }),
       setSealSettings: (patch: Partial<SealSettings>) => dispatch({ type: 'sealSettings', patch }),
     }),
-    [addFiles],
+    [addFiles, snapshot],
   )
 
-  return { state: s, t, dupes, views, blockers, actions }
+  return { state: s, t, dupes, views, blockers, actions, savedAt }
 }
 
 export type Store = ReturnType<typeof useStore>
