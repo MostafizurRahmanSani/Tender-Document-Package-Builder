@@ -1,0 +1,98 @@
+@import 'tailwindcss';
+
+/* Design tokens: one accent, quiet neutrals, status colors that always come with an icon and text. */
+@theme {
+  --font-sans: 'Inter', 'Noto Sans Bengali', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+
+  --color-paper: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-sunken: #eef1f5;
+  --color-ink: #0f172a;
+  --color-ink-2: #334155;
+  --color-muted: #5b6678;
+  --color-line: #dfe3ea;
+  --color-line-strong: #c9d0db;
+
+  --color-accent: #2b4fd8;
+  --color-accent-hover: #2442b8;
+  --color-accent-soft: #e9eefd;
+
+  --color-ok: #157a3c;
+  --color-ok-soft: #e6f5ec;
+  --color-warn: #a4520a;
+  --color-warn-soft: #fdf1e1;
+  --color-bad: #b42318;
+  --color-bad-soft: #fdecea;
+  --color-idle: #5b6678;
+  --color-idle-soft: #eef1f5;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Bangla: taller lines so vowel marks never clip, slightly larger, never tracked. */
+html[lang='bn'] body {
+  font-size: 16px;
+  line-height: 1.7;
+}
+html[lang='bn'] * {
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Native date input, styled to match the other controls. */
+input[type='date']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+button:not(:disabled),
+label[for],
+select:not(:disabled) {
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
